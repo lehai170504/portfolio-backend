@@ -12,7 +12,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -69,13 +71,47 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(HttpStatus.BAD_REQUEST.value(), "File size exceeds the maximum allowed limit"));
     }
 
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity<ApiResponse<Object>> handleMultipartException(MultipartException ex) {
+        log.warn("File upload error: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(HttpStatus.BAD_REQUEST.value(), "Invalid file upload: " + ex.getMessage()));
+    }
+
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<ApiResponse<Object>> handleIOException(IOException ex) {
+        log.error("IO error during file operation: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "File processing error: " + ex.getMessage()));
+    }
+
+    // ── Configuration / Illegal state ───────────────────────────
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ApiResponse<Object>> handleIllegalState(IllegalStateException ex) {
+        log.error("Configuration error: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Configuration error: " + ex.getMessage()));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<Object>> handleIllegalArgument(IllegalArgumentException ex) {
+        log.warn("Invalid argument: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(HttpStatus.BAD_REQUEST.value(), "Invalid argument: " + ex.getMessage()));
+    }
+
     // ── Fallback ───────────────────────────────────────────────
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleGenericException(Exception ex, HttpServletRequest request) {
-        log.error("Unhandled exception at {}: ", request.getRequestURI(), ex);
+        log.error("Unhandled exception at {}: {}", request.getRequestURI(), ex.getMessage(), ex);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An internal error occurred"));
+                .body(ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An internal error occurred: " + ex.getMessage()));
     }
 }
