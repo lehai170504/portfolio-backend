@@ -1,22 +1,27 @@
-FROM eclipse-temurin:17-jre-alpine
+# Stage 1: Build app
+FROM eclipse-temurin:17-jdk-alpine AS build
 
-# Create non-root user for security
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-
-# Set working directory
 WORKDIR /app
 
-# Copy jar file
-COPY target/*.jar app.jar
+COPY . .
 
-# Change ownership to non-root user
-RUN chown -R appuser:appgroup /app
+RUN chmod +x mvnw
+RUN ./mvnw clean package -DskipTests
 
-# Switch to non-root user
+
+# Stage 2: Run app
+FROM eclipse-temurin:17-jre-alpine
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+WORKDIR /app
+
+COPY --from=build /app/target/*.jar app.jar
+
+RUN chown appuser:appgroup app.jar
+
 USER appuser
 
-# Expose port
 EXPOSE 8080
 
-# Run application
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-8080} -jar app.jar"]
