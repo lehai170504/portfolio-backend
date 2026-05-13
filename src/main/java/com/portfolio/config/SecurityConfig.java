@@ -40,11 +40,21 @@ public class SecurityConfig {
     private final ObjectMapper objectMapper;
 
     private static final String[] PUBLIC_GET = {
-            "/projects/**", "/skills/**", "/experiences/**"
+            "/projects/**",
+            "/skills/**",
+            "/experiences/**",
+            "/certificates/**"
     };
 
     private static final String[] SWAGGER_WHITELIST = {
-            "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html"
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html"
+    };
+
+    private static final String[] ACTUATOR_WHITELIST = {
+            "/actuator/**",
+            "/api/actuator/**"
     };
 
     @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
@@ -58,6 +68,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(ACTUATOR_WHITELIST).permitAll()
                         .requestMatchers(SWAGGER_WHITELIST).permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/contact").permitAll()
