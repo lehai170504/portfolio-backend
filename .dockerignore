@@ -9,21 +9,16 @@
 *.iws
 .vscode
 
-# Maven
-.mvn
-mvnw
-mvnw.cmd
+# Build output
 target
-!target/*.jar
 
-# Documentation
+# Docs
 HELP.md
 README.md
 
-# Docker
-Dockerfile
-docker-compose.yml
-.dockerignore
+# Env / secrets
+.env
+.env.*
 
 # Misc
 *.log
