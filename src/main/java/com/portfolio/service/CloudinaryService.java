@@ -21,7 +21,7 @@ public class CloudinaryService {
 
     private final Cloudinary cloudinary;
 
-    @Value("${cloudinary.folder:portfolio}")
+    @Value("${app.cloudinary.folder:portfolio}")
     private String folder;
 
     private static final Set<String> ALLOWED_IMAGE_TYPES = Set.of(
@@ -68,8 +68,6 @@ public class CloudinaryService {
     public void deleteByUrl(String url) {
         if (url == null || url.isBlank()) return;
         try {
-            // Extract public_id from URL
-            // URL format: https://res.cloudinary.com/{cloud}/image/upload/v{version}/{folder}/{public_id}.{ext}
             String publicId = extractPublicIdFromUrl(url);
             if (publicId != null) {
                 delete(publicId);
