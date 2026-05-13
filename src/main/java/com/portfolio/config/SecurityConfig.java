@@ -47,7 +47,7 @@ public class SecurityConfig {
             "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html"
     };
 
-    @Value("${app.cors.allowed-origins}")
+    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
     private List<String> allowedOrigins;
 
     @Bean
