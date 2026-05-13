@@ -1,10 +1,9 @@
 package com.portfolio.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.portfolio.security.JwtAuthFilter;
 import com.portfolio.utils.ApiResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -43,7 +42,8 @@ public class SecurityConfig {
             "/projects/**",
             "/skills/**",
             "/experiences/**",
-            "/certificates/**"
+            "/certificates/**",
+            "/uploads/**"
     };
 
     private static final String[] SWAGGER_WHITELIST = {
@@ -57,9 +57,6 @@ public class SecurityConfig {
             "/api/actuator/**"
     };
 
-    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
-    private List<String> allowedOrigins;
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -68,12 +65,19 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Cho phép browser preflight CORS
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // Public endpoints
                         .requestMatchers(ACTUATOR_WHITELIST).permitAll()
                         .requestMatchers(SWAGGER_WHITELIST).permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/contact").permitAll()
+
+                        // Public GET APIs cho FE portfolio
                         .requestMatchers(HttpMethod.GET, PUBLIC_GET).permitAll()
-                        .requestMatchers("/uploads/**").permitAll()
+
+                        // Các request còn lại cần login
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
@@ -100,9 +104,16 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(allowedOrigins);
+        config.setAllowedOriginPatterns(List.of(
+                "http://localhost:3000",
+                "http://localhost:5173",
+                "https://portfolio-eight-olive-32.vercel.app",
+                "https://*.vercel.app"
+        ));
+
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
 
