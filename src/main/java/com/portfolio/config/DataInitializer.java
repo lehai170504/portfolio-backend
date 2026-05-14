@@ -1,7 +1,9 @@
 package com.portfolio.config;
 
+import com.portfolio.entity.Profile;
 import com.portfolio.entity.User;
 import com.portfolio.enums.UserRole;
+import com.portfolio.repository.ProfileRepository;
 import com.portfolio.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Component;
 public class DataInitializer implements ApplicationRunner {
 
     private final UserRepository userRepository;
+    private final ProfileRepository profileRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Value("${app.admin.email:admin@portfolio.com}")
@@ -28,10 +31,24 @@ public class DataInitializer implements ApplicationRunner {
     @Value("${app.admin.full-name:Portfolio Admin}")
     private String adminFullName;
 
+    @Value("${app.profile.headline:Java Backend Developer}")
+    private String profileHeadline;
+
+    @Value("${app.profile.bio:I build clean, secure, and maintainable backend APIs with Spring Boot.}")
+    private String profileBio;
+
+    @Value("${app.profile.location:Vietnam}")
+    private String profileLocation;
+
     @Override
     public void run(ApplicationArguments args) {
+        seedAdmin();
+        seedProfile();
+    }
+
+    private void seedAdmin() {
         if (userRepository.existsByEmail(adminEmail)) {
-            log.info("Admin '{}' already exists — skipping seed", adminEmail);
+            log.info("Admin '{}' already exists - skipping seed", adminEmail);
             return;
         }
 
@@ -45,11 +62,27 @@ public class DataInitializer implements ApplicationRunner {
 
         userRepository.save(admin);
 
-        log.warn("╔══════════════════════════════════════════════╗");
-        log.warn("║         DEFAULT ADMIN ACCOUNT CREATED        ║");
-        log.warn("║  Email   : {}              ║", adminEmail);
-        log.warn("║  Password: {}                       ║", adminPassword);
-        log.warn("║  !! CHANGE PASSWORD AFTER FIRST LOGIN !!     ║");
-        log.warn("╚══════════════════════════════════════════════╝");
+        log.warn("Default admin account created. Email: {}. Change the password after first login.", adminEmail);
+    }
+
+    private void seedProfile() {
+        if (profileRepository.findByProfileKey("main").isPresent()) {
+            log.info("Public profile already exists - skipping seed");
+            return;
+        }
+
+        Profile profile = Profile.builder()
+                .profileKey("main")
+                .fullName(adminFullName)
+                .headline(profileHeadline)
+                .bio(profileBio)
+                .email(adminEmail)
+                .location(profileLocation)
+                .yearsOfExperience(0)
+                .availability("Open to internship, fresher, and junior backend opportunities")
+                .build();
+
+        profileRepository.save(profile);
+        log.info("Default public profile created");
     }
 }

@@ -54,9 +54,13 @@ public class CloudinaryService {
     // ── Delete by public_id ────────────────────────────────────
 
     public void delete(String publicId) {
+        delete(publicId, "image");
+    }
+
+    public void delete(String publicId, String resourceType) {
         if (publicId == null || publicId.isBlank()) return;
         try {
-            cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+            cloudinary.uploader().destroy(publicId, ObjectUtils.asMap("resource_type", resourceType));
             log.info("Deleted Cloudinary asset: {}", publicId);
         } catch (IOException ex) {
             log.warn("Failed to delete Cloudinary asset {}: {}", publicId, ex.getMessage());
@@ -66,11 +70,15 @@ public class CloudinaryService {
     // ── Delete by URL ──────────────────────────────────────────
 
     public void deleteByUrl(String url) {
+        deleteByUrl(url, "image");
+    }
+
+    public void deleteByUrl(String url, String resourceType) {
         if (url == null || url.isBlank()) return;
         try {
             String publicId = extractPublicIdFromUrl(url);
             if (publicId != null) {
-                delete(publicId);
+                delete(publicId, resourceType);
             }
         } catch (Exception ex) {
             log.warn("Failed to extract public_id from URL {}: {}", url, ex.getMessage());

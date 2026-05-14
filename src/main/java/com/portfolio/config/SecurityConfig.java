@@ -40,6 +40,7 @@ public class SecurityConfig {
 
     private static final String[] PUBLIC_GET = {
             "/projects/**",
+            "/profile/**",
             "/skills/**",
             "/experiences/**",
             "/certificates/**",

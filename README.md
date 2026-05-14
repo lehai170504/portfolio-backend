@@ -6,6 +6,7 @@ A modern, secure, and scalable REST API for portfolio websites built with Spring
 
 - **Authentication & Authorization**: JWT-based authentication with refresh tokens
 - **Portfolio Management**: CRUD operations for Projects, Skills, Experiences
+- **Public Profile**: Recruiter-facing profile with avatar, bio, contact links, and resume
 - **Search**: Full-text search for projects by title/description
 - **Analytics**: View count tracking for projects
 - **Contact Form**: Rate-limited contact form (3 req/hour) with email notifications
@@ -59,6 +60,10 @@ A modern, secure, and scalable REST API for portfolio websites built with Spring
 | Endpoint | Description | Auth |
 |----------|-------------|------|
 | `POST /api/auth/login` | Admin login | Public |
+| `GET /api/profile` | Get public portfolio profile | Public |
+| `PUT /api/profile` | Update public portfolio profile | Admin |
+| `PATCH /api/profile/avatar` | Upload public avatar | Admin |
+| `PATCH /api/profile/resume` | Upload resume PDF | Admin |
 | `GET /api/projects` | List all active projects | Public |
 | `GET /api/projects/featured` | Get featured projects | Public |
 | `GET /api/projects/search?keyword=` | Search projects | Public |
